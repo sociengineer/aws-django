@@ -3,7 +3,7 @@ import boto3
 # Create SQS client
 sqs = boto3.client('sqs', region_name='ap-northeast-2')
 
-queue_url = 'https://sqs.ap-northeast-2.amazonaws.com/687651457542/s3-ec2'
+queue_url = 'https://sqs.ap-northeast-2.amazonaws.com/687651457542/s3-sqs-standard-que'
 
 # Receive message from SQS queue
 response = sqs.receive_message(
