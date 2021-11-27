@@ -20,7 +20,7 @@ response = sqs.receive_message(
 )
 
 message = response['Messages'][0]['Body']
-receipt_handle = message['ReceiptHandle']
+# receipt_handle = message['ReceiptHandle']
 
 print(message)
 
