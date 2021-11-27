@@ -54,7 +54,7 @@ SECRET_KEY = get_env_variable("INSTA_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['http://ec2-3-34-130-76.ap-northeast-2.compute.amazonaws.com']
+ALLOWED_HOSTS = ['ec2-3-34-130-76.ap-northeast-2.compute.amazonaws.com']
 
 
 # Application definition
