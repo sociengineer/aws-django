@@ -28,7 +28,7 @@ file_name = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']['obj
 # receipt_handle = message['ReceiptHandle']
 
 
-# print(bucket_name, file_name)
+print(bucket_name, file_name)
 
 s3 = boto3.client('s3')
 s3.download_file(bucket_name, file_name, file_name)
