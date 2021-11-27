@@ -34,7 +34,7 @@ print(bucket_name, file_name)
 s3 = boto3.client('s3')
 s3.download_file(bucket_name, file_name, file_name)
 
-df = pd.DataFrame(file_name)
+df = pd.read_csv(file_name)
 print(df)
 
 
