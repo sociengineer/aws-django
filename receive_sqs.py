@@ -19,7 +19,7 @@ response = sqs.receive_message(
     WaitTimeSeconds=0
 )
 
-message = response['Messages'][0]
+message = response['Messages'][0]['Body']
 receipt_handle = message['ReceiptHandle']
 
 print(message)
