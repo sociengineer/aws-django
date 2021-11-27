@@ -1,4 +1,5 @@
 import boto3
+import json
 
 # Create SQS client
 sqs = boto3.client('sqs', region_name='ap-northeast-2')
@@ -19,7 +20,7 @@ response = sqs.receive_message(
     WaitTimeSeconds=0
 )
 
-message = response['Messages'][0]['Body']
+message = json.loads(response['Messages'][0]['Body'])
 # receipt_handle = message['ReceiptHandle']
 
 print(message)
