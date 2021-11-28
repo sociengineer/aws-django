@@ -3,7 +3,8 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-from nltk.corpus import stopwords  
+from nltk.corpus import stopwords
+from collections import Counter
 
 # # Create SQS client
 # sqs = boto3.client('sqs', 
@@ -38,18 +39,22 @@ from nltk.corpus import stopwords
 # s3 = boto3.client('s3')
 # s3.download_file(bucket_name, file_name, file_name)
 
+access_key_id='AKIA2AGZYRIDH27476N3'
+secret_access_key='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'
+
+
 
 translate = boto3.client(service_name='translate', 
                         region_name='ap-northeast-2', 
                         use_ssl=True, 
-                        aws_access_key_id='AKIA2AGZYRIDH27476N3',
-                        aws_secret_access_key='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')
+                        aws_access_key_id=access_key_id,
+                        aws_secret_access_key=secret_access_key)
 
 
 comprehend = boto3.client(service_name='comprehend',
                           region_name='ap-northeast-2',
-                          aws_access_key_id='AKIA2AGZYRIDH27476N3',
-                          aws_secret_access_key='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')
+                          aws_access_key_id=access_key_id,
+                          aws_secret_access_key=secret_access_key)
 
 
 df = pd.read_csv('review_test.csv', encoding='utf-8')
@@ -70,6 +75,8 @@ wordcloud_texts = ''
                 
 # wordcloud_texts = wordcloud_texts.lower().replace('the_', '').replace('a_', '')
 
+word_list = []
+
 for index, review in df.iterrows():
     review_text_title = str(review['reviews.text']) + ' ' + str(review['reviews.title'])
     detected_source_language_code = json.dumps(comprehend.detect_dominant_language(Text = review_text_title).get('Languages')[0].get('LanguageCode'))
@@ -78,9 +85,14 @@ for index, review in df.iterrows():
     translated_text = result.get('TranslatedText')
     for tokens in comprehend.detect_syntax(Text=translated_text, LanguageCode='en').get('SyntaxTokens'):
         if tokens.get('PartOfSpeech').get('Tag') in ['NOUN', 'ADV', 'ADJ']:
+            word_list.append(tokens.get('Text').lower())
             wordcloud_texts += str(tokens.get('Text')) + ' '
 
-
+counter = Counter(word_list)
+word_freq = pd.DataFrame.from_dict(counter, orient='index').reset_index()
+word_freq.columns = ['text','size']
+print(word_freq)
+word_freq.to_csv('~/django-chart/charts/chartjs/data/hotel_review.csv')
 # review['reviews.text'].decode('utf-8'))
 # text = df.iloc[0]['reviews.text']
 
@@ -113,11 +125,11 @@ for index, review in df.iterrows():
 
 
 
-word_cloud = WordCloud(collocations = False, background_color = 'white').generate(wordcloud_texts)
-plt.imshow(word_cloud, interpolation='bilinear')
-plt.axis("off")
-plt.show()
-plt.savefig('wordcloud.png')
+# word_cloud = WordCloud(collocations = False, background_color = 'white').generate(wordcloud_texts)
+# plt.imshow(word_cloud, interpolation='bilinear')
+# plt.axis("off")
+# plt.show()
+# plt.savefig('wordcloud.png')
 
 
 # print(json.dumps(comprehend.detect_syntax(Text=translated_text, LanguageCode='en'), sort_keys=True, indent=4).get('SyntaxTokens'))
