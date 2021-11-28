@@ -6,10 +6,7 @@ from wordcloud import WordCloud
 from nltk.corpus import stopwords  
 
 # # Create SQS client
-# sqs = boto3.client('sqs', 
-#                     region_name='ap-northeast-2',
-#                     aws_access_key_id='AKIA2AGZYRIDH27476N3',
-#                     aws_secret_access_key='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')
+# sqs = boto3.client('sqs')
 
 # queue_url = 'https://sqs.ap-northeast-2.amazonaws.com/687651457542/s3-sqs-standard-que'
 
@@ -41,15 +38,11 @@ from nltk.corpus import stopwords
 
 translate = boto3.client(service_name='translate', 
                         region_name='ap-northeast-2', 
-                        use_ssl=True, 
-                        aws_access_key_id='AKIA2AGZYRIDH27476N3',
-                        aws_secret_access_key='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')
+                        use_ssl=True)
 
 
 comprehend = boto3.client(service_name='comprehend',
-                          region_name='ap-northeast-2',
-                          aws_access_key_id='AKIA2AGZYRIDH27476N3',
-                          aws_secret_access_key='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')
+                          region_name='ap-northeast-2')
 
 
 df = pd.read_csv('review_test.csv', encoding='utf-8')
