@@ -117,6 +117,7 @@ word_cloud = WordCloud(collocations = False, background_color = 'white').generat
 plt.imshow(word_cloud, interpolation='bilinear')
 plt.axis("off")
 plt.show()
+plt.savefig('wordcloud.png')
 
 
 # print(json.dumps(comprehend.detect_syntax(Text=translated_text, LanguageCode='en'), sort_keys=True, indent=4).get('SyntaxTokens'))
