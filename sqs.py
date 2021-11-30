@@ -36,7 +36,7 @@ file_name = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']['obj
 # receipt_handle = message['ReceiptHandle']
 
 
-# print(bucket_name, file_name)
+print(bucket_name, file_name)
 
 s3 = boto3.client('s3')
 s3.download_file(bucket_name, file_name, file_name)
@@ -61,7 +61,7 @@ comprehend = boto3.client(service_name='comprehend',
 
 
 
-df = pd.read_csv('review_test.csv', encoding='utf-8')
+df = pd.read_csv(file_name, encoding='utf-8')
 df = df.drop(columns=['address'])
 df = df.drop(columns=['latitude'])
 df = df.drop(columns=['longitude'])
@@ -109,7 +109,7 @@ for index, review in df.iterrows():
 df = df.drop(columns=['reviews.text'])
 df = df.drop(columns=['reviews.title'])
 df.to_csv('../aws-wordcloud/mysite/search/static/data/tokens.csv', index=False)
-
+print(df)
 # counter = Counter(word_list)
 # word_freq = pd.DataFrame.from_dict(counter, orient='index').reset_index()
 # word_freq.columns = ['text','size']
