@@ -7,34 +7,39 @@ from nltk.corpus import stopwords
 from collections import Counter
 
 # # Create SQS client
-# sqs = boto3.client('sqs')
+sqs = boto3.client('sqs')
 
-# queue_url = 'https://sqs.ap-northeast-2.amazonaws.com/687651457542/s3-sqs-standard-que'
+queue_url = 'https://sqs.ap-northeast-2.amazonaws.com/687651457542/s3-sqs-standard-que'
 
-# # Receive message from SQS queue
-# response = sqs.receive_message(
-#     QueueUrl=queue_url,
-#     AttributeNames=[
-#         'SentTimestamp'
-#     ],
-#     MaxNumberOfMessages=1,
-#     MessageAttributeNames=[
-#         'All'
-#     ],
-#     VisibilityTimeout=0,
-#     WaitTimeSeconds=0
-# )
+# Receive message from SQS queue
+response = sqs.receive_message(
+    QueueUrl=queue_url,
+    AttributeNames=[
+        'SentTimestamp'
+    ],
+    MaxNumberOfMessages=1,
+    MessageAttributeNames=[
+        'All'
+    ],
+    VisibilityTimeout=0,
+    WaitTimeSeconds=0
+)
+# Delete received message from queue
+sqs.delete_message(
+    QueueUrl=queue_url,
+    ReceiptHandle=response['Messages'][0]['ReceiptHandle']
+)
 
-# # message = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']
-# bucket_name = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']['bucket']['name']
-# file_name = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']['object']['key']
-# # receipt_handle = message['ReceiptHandle']
+# message = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']
+bucket_name = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']['bucket']['name']
+file_name = json.loads(response['Messages'][0]['Body'])['Records'][0]['s3']['object']['key']
+# receipt_handle = message['ReceiptHandle']
 
 
-# # print(bucket_name, file_name)
+# print(bucket_name, file_name)
 
-# s3 = boto3.client('s3')
-# s3.download_file(bucket_name, file_name, file_name)
+s3 = boto3.client('s3')
+s3.download_file(bucket_name, file_name, file_name)
 
 access_key_id='AKIA2AGZYRIDH27476N3'
 secret_access_key='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'
@@ -43,7 +48,6 @@ secret_access_key='yKMV9Gs0uNywnsLIsj63AdybkoDmjM08l8NFj+DY'
 
 translate = boto3.client(service_name='translate', 
                         region_name='ap-northeast-2', 
-<<<<<<< HEAD
                         use_ssl=True, 
                         aws_access_key_id=access_key_id,
                         aws_secret_access_key=secret_access_key)
@@ -52,17 +56,23 @@ translate = boto3.client(service_name='translate',
 comprehend = boto3.client(service_name='comprehend',
                           region_name='ap-northeast-2',
                           aws_access_key_id=access_key_id,
-                          aws_secret_access_key=secret_access_key)
-=======
+                          aws_secret_access_key=secret_access_key,
                         use_ssl=True)
 
 
-comprehend = boto3.client(service_name='comprehend',
-                          region_name='ap-northeast-2')
->>>>>>> bab6c8b71e89ea40117b5e40dc8955d6d589b7a5
-
 
 df = pd.read_csv('review_test.csv', encoding='utf-8')
+df = df.drop(columns=['address'])
+df = df.drop(columns=['latitude'])
+df = df.drop(columns=['longitude'])
+df = df.drop(columns=['postalCode'])
+df = df.drop(columns=['province'])
+df = df.drop(columns=['reviews.dateAdded'])
+df = df.drop(columns=['reviews.doRecommend'])
+df = df.drop(columns=['reviews.id'])
+df = df.drop(columns=['reviews.userCity'])
+df = df.drop(columns=['reviews.username'])
+df = df.drop(columns=['reviews.userProvince'])
 # df = df[:3]
 # print(df.iloc[0]['reviews.text'])
 review_text_title= ''
@@ -79,7 +89,7 @@ wordcloud_texts = ''
 #         wordcloud_texts += key_phrase.get('Text').replace(' ','_') + ' '
                 
 # wordcloud_texts = wordcloud_texts.lower().replace('the_', '').replace('a_', '')
-
+df['tokens'] = ''
 word_list = []
 
 for index, review in df.iterrows():
@@ -88,16 +98,24 @@ for index, review in df.iterrows():
     result = translate.translate_text(Text=review_text_title, 
             SourceLanguageCode=detected_source_language_code.replace("\"",""), TargetLanguageCode="en")
     translated_text = result.get('TranslatedText')
+    token_for_review = []
     for tokens in comprehend.detect_syntax(Text=translated_text, LanguageCode='en').get('SyntaxTokens'):
-        if tokens.get('PartOfSpeech').get('Tag') in ['NOUN', 'ADV', 'ADJ']:
-            word_list.append(tokens.get('Text').lower())
-            wordcloud_texts += str(tokens.get('Text')) + ' '
+        if tokens.get('PartOfSpeech').get('Tag') in ['NOUN', 'ADV', 'ADJ'] and tokens.get('Text').lower() not in ['hotel','room']:
+            token_for_review.append(tokens.get('Text').lower())
+            # word_list.append(tokens.get('Text').lower())
+            # wordcloud_texts += str(tokens.get('Text')) + ' '
+    df.at[index,'tokens'] = token_for_review
 
-counter = Counter(word_list)
-word_freq = pd.DataFrame.from_dict(counter, orient='index').reset_index()
-word_freq.columns = ['text','size']
-print(word_freq)
-word_freq.to_csv('~/django-chart/charts/chartjs/data/hotel_review.csv')
+df = df.drop(columns=['reviews.text'])
+df = df.drop(columns=['reviews.title'])
+df.to_csv('../aws-wordcloud/mysite/search/static/data/tokens.csv', index=False)
+
+# counter = Counter(word_list)
+# word_freq = pd.DataFrame.from_dict(counter, orient='index').reset_index()
+# word_freq.columns = ['text','size']
+# print(word_freq)
+# word_freq = word_freq.fillna('')
+# word_freq.to_csv('~/django-chart/charts/chartjs/data/hotel_review.csv')
 # review['reviews.text'].decode('utf-8'))
 # text = df.iloc[0]['reviews.text']
 
